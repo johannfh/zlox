@@ -9,7 +9,7 @@ pub fn main() !void {
     const is_debug = builtin.mode == .Debug;
 
     var debug_allocator = if (is_debug) std.heap.DebugAllocator(.{}).init else struct {}{};
-    const allocator = if (is_debug) debug_allocator.allocator() else std.heap.page_allocator;
+    const gpa = if (is_debug) debug_allocator.allocator() else std.heap.page_allocator;
     defer if (is_debug) {
         const check = debug_allocator.deinit();
         if (check == .leak) {
@@ -24,12 +24,13 @@ pub fn main() !void {
     }
 
     var chunk = Chunk.new();
-    defer chunk.deinit(allocator);
+    defer chunk.deinit(gpa);
 
-    try chunk.writeOpcode(allocator, .OP_RETURN);
-    try chunk.writeOpcode(allocator, .OP_RETURN);
-    try chunk.write(allocator, 5);
-    try chunk.writeOpcode(allocator, .OP_RETURN);
+    const const_idx = try chunk.writeConstant(gpa, 3.14159);
+
+    try chunk.writeOpcode(gpa, .OP_CONSTANT, 123);
+    try chunk.write(gpa, const_idx, 123);
+    try chunk.writeOpcode(gpa, .OP_RETURN, 123);
 
     var buf: [1024]u8 = undefined;
     var stderr = std.fs.File.stderr().writer(&buf);
