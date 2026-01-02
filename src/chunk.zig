@@ -59,7 +59,7 @@ pub const Chunk = struct {
         return @intCast(this.constants.items.len - 1);
     }
 
-    pub fn readConstant(this: *This, idx: usize) Value {
+    pub fn readConstant(this: *const This, idx: usize) Value {
         return this.constants.items[idx];
     }
 

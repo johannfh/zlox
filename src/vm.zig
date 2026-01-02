@@ -12,10 +12,10 @@ pub const InterpretError = error{
 };
 
 pub const VM = struct {
-    chunk: *Chunk,
+    chunk: *const Chunk,
     ip: usize,
 
-    pub fn init(c: *Chunk) @This() {
+    pub fn init(c: *const Chunk) @This() {
         return .{ .chunk = c, .ip = 0 };
     }
 
