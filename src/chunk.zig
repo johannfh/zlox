@@ -1,7 +1,5 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-
-const memory = @import("memory.zig");
 const ArrayList = std.ArrayList;
 
 const Value = @import("value.zig").Value;
@@ -9,11 +7,19 @@ const Value = @import("value.zig").Value;
 pub const Opcode = enum(u8) {
     OP_RETURN,
     OP_CONSTANT,
+    OP_ADD,
+    OP_SUBTRACT,
+    OP_MULTIPLY,
+    OP_DIVIDE,
 
     pub fn toString(this: @This()) []const u8 {
         switch (this) {
             .OP_RETURN => return "OP_RETURN",
             .OP_CONSTANT => return "OP_CONSTANT",
+            .OP_ADD => return "OP_ADD",
+            .OP_SUBTRACT => return "OP_SUBTRACT",
+            .OP_MULTIPLY => return "OP_MULTIPLY",
+            .OP_DIVIDE => return "OP_DIVIDE",
         }
     }
 
@@ -53,10 +59,12 @@ pub const Chunk = struct {
         try this.write(gpa, @intFromEnum(opcode), line);
     }
 
-    pub fn writeConstant(this: *This, gpa: Allocator, value: Value) !u8 {
+    pub fn writeConstant(this: *This, gpa: Allocator, value: Value) !usize {
         if (this.constants.items.len >= 256) return error.MaxConstantsReached;
         try this.constants.append(gpa, value);
-        return @intCast(this.constants.items.len - 1);
+        const idx: usize = @intCast(this.constants.items.len - 1);
+        std.debug.print("Wrote constant {f} to index {d}\n", .{ value, idx });
+        return idx;
     }
 
     pub fn readConstant(this: *const This, idx: usize) Value {
